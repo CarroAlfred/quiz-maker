@@ -9,12 +9,6 @@ export function Dashboard() {
         <div className='p-4 font-bold text-lg border-b'>Quiz App</div>
         <nav className='flex-1 p-4 space-y-2'>
           <a
-            href='/player'
-            className='block px-3 py-2 rounded-lg hover:bg-gray-100 font-medium'
-          >
-            Player
-          </a>
-          <a
             href='/'
             className='block px-3 py-2 rounded-lg hover:bg-gray-100 font-medium'
           >

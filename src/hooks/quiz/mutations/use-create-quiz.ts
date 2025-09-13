@@ -6,7 +6,7 @@ export function useCreateQuiz({
   onSuccess = () => {},
   onError = () => {},
 }: {
-  onSuccess?: () => void;
+  onSuccess?: (data?: Quiz.QuizInfo) => void;
   onError?: (error: string) => void;
 }) {
   const queryClient = useQueryClient();
@@ -16,8 +16,8 @@ export function useCreateQuiz({
       const res = await QuizServiceApi.createQuiz(body);
       return res;
     },
-    onSuccess: () => {
-      onSuccess();
+    onSuccess: (data) => {
+      onSuccess(data);
       queryClient.invalidateQueries({
         queryKey: ['quizzes'],
       });

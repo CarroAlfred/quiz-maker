@@ -34,6 +34,20 @@ export default function QuizSidebar({ quiz, className = '', onCLickEdit }: QuizS
           weight='bold'
           className='text-gray-800'
         >
+          Quiz Id
+        </Typography>
+        <Typography>{quiz.id}</Typography>
+      </Typography>
+
+      <Typography
+        as='span'
+        weight='bold'
+        className='px-4 py-1 flex flex-row gap-1 justify-between'
+      >
+        <Typography
+          weight='bold'
+          className='text-gray-800'
+        >
           Time Limit
         </Typography>
         <Typography>{formatDuration(quiz.timeLimitSeconds) ?? 'No limit'}</Typography>

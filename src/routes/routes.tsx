@@ -1,8 +1,8 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import { Quiz } from '../pages';
 import { Dashboard } from '../components';
-import { QuizList, QuizDetailsPage } from '../presentation';
+import { QuizDetailsPage } from '../presentation';
 import { PlayerPage } from '../presentation/Player/player-page';
+import { Quiz } from '../pages';
 
 // this will consist of quiz routes and player routes
 export const AppRouter = () => {
@@ -14,17 +14,13 @@ export const AppRouter = () => {
             path='/'
             element={<Quiz />}
           />
-          <Route
-            path='/quiz/list'
-            element={<QuizList />}
-          />
         </Route>
         <Route
           path='/quiz/details/:id'
           element={<QuizDetailsPage />}
         />
         <Route
-          path='/player'
+          path='/assessment/:quizId'
           element={<PlayerPage />}
         />
       </Routes>

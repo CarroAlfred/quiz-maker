@@ -4,7 +4,7 @@ import QuizSidebar from './quiz-sidebar';
 import QuestionCard from './question-card';
 import { useState } from 'react';
 import { MultiQuestionDialog } from '../question';
-import { CreateUpdateQuizDialog } from '../create-quiz';
+import { CreateUpdateQuizDialog } from '../create-update-quiz';
 import { useUpdateQuizMetadata, useGetQuiz } from '../../../hooks';
 import { BsArrowLeft, BsPlusCircle } from 'react-icons/bs';
 

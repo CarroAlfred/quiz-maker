@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { Quiz } from '../../../../types';
-import { DialogContainer, Dropdown, showToast, TextArea, TextInput } from '../../../../components';
+import { DialogContainer, Dropdown, showToast, TextArea, TextInput, Typography } from '../../../../components';
 import { useUpdateQuestion } from '../../../../hooks';
 
 type FormValues = Omit<Quiz.Question, 'id' | 'quizId'>;
@@ -98,7 +98,12 @@ export function UpdateQuestionDialog({ open, onClose, quizId, question }: Update
           control={control}
           render={({ field }) => (
             <div className='flex flex-col mb-2'>
-              <label className='text-sm font-medium mb-2 text-gray-700'>Question Type</label>
+              <Typography
+                variant='caption'
+                weight='medium'
+              >
+                Question Type
+              </Typography>
               <Dropdown
                 value={field.value}
                 items={questionTypes.map((t) => ({
@@ -113,7 +118,12 @@ export function UpdateQuestionDialog({ open, onClose, quizId, question }: Update
 
         {/* Prompt */}
         <div className='flex flex-col mb-2'>
-          <label className='text-sm font-medium text-gray-700'>Prompt</label>
+          <Typography
+            variant='caption'
+            weight='medium'
+          >
+            Prompt
+          </Typography>
           <TextArea
             {...register('prompt')}
             placeholder='Enter question prompt'
@@ -123,7 +133,12 @@ export function UpdateQuestionDialog({ open, onClose, quizId, question }: Update
         {/* Conditional fields */}
         {type === 'mcq' && (
           <div className='flex flex-col mb-2'>
-            <label className='text-sm font-medium text-gray-700'>Choices</label>
+            <Typography
+              variant='caption'
+              weight='medium'
+            >
+              Choices
+            </Typography>
             <div className='flex flex-col gap-2'>
               {Array.from({ length: 4 }).map((_, optIdx) => (
                 <TextInput
@@ -134,7 +149,12 @@ export function UpdateQuestionDialog({ open, onClose, quizId, question }: Update
               ))}
             </div>
 
-            <label className='text-sm font-medium text-gray-700 mt-1'>Correct Option Index (0-3)</label>
+            <Typography
+              variant='caption'
+              weight='medium'
+            >
+              Correct Option Index (0-3)
+            </Typography>
             <TextInput
               type='number'
               min={0}
@@ -148,7 +168,12 @@ export function UpdateQuestionDialog({ open, onClose, quizId, question }: Update
 
         {type === 'short' && (
           <div className='flex flex-col mb-2'>
-            <label className='text-sm font-medium text-gray-700'>Answer</label>
+            <Typography
+              variant='caption'
+              weight='medium'
+            >
+              Answer
+            </Typography>
             <TextInput
               {...register('correctAnswer')}
               placeholder='Correct answer text'
@@ -158,7 +183,12 @@ export function UpdateQuestionDialog({ open, onClose, quizId, question }: Update
 
         {type === 'code' && (
           <div className='flex flex-col mb-2'>
-            <label className='text-sm font-medium text-gray-700'>Solution Code</label>
+            <Typography
+              variant='caption'
+              weight='medium'
+            >
+              Solution Code
+            </Typography>
             <textarea
               {...register('correctAnswer')}
               rows={4}

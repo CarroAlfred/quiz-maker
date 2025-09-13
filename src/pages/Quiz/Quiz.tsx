@@ -1,60 +1,53 @@
+import { Button, Container, QuizCard, showToast } from '../../components';
+import { useCreateQuiz, useGetQuizList } from '../../hooks';
 import { useNavigate } from 'react-router-dom';
-import { Container, showToast } from '../../components';
-import { CreateUpdateQuizDialog } from '../../presentation';
 import { useState } from 'react';
-import { useCreateQuiz } from '../../hooks';
+import { CreateUpdateQuizDialog } from '../../presentation';
 
-export const Quiz = () => {
+export function Quiz() {
+  const navigate = useNavigate();
+  const { data: quizzes } = useGetQuizList();
+
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const { handleCreateQuiz, isLoading } = useCreateQuiz({
-    onSuccess: () => {
+    onSuccess: (data) => {
       showToast.success('Quiz created successfully!');
-      navigate('/quiz/list');
+      navigate(`/quiz/details/${data?.id}`);
       setIsCreateDialogOpen(false);
     },
     onError: () => {
       showToast.error('Quiz Error');
     },
   });
-  const navigate = useNavigate();
+
+  const handleOpenQuiz = (quizId: number) => {
+    window.open(`/assessment/${quizId}`, '_blank', 'noopener,noreferrer');
+  };
+
   return (
-    <Container className='grid grid-cols-2 gap-6 place-items-center h-full'>
-      <div className='relative flex flex-col my-6 bg-white shadow-sm border border-slate-200 rounded-lg'>
-        <div className='relative h-56 m-2.5 overflow-hidden text-white rounded-md'>
-          <span>📋</span>
-        </div>
-        <div className='p-4'>
-          <h6 className='mb-2 text-slate-800 text-xl font-semibold'>Quiz List</h6>
-          <p className='text-slate-600 leading-normal font-light'>Check Current Quizzes</p>
-        </div>
-        <div className='px-4 pb-4 pt-0 mt-2'>
-          <button
-            onClick={() => navigate('/quiz/list')}
-            className='rounded-md bg-slate-800 py-2 px-4 border border-transparent text-center text-sm text-white transition-all shadow-md hover:shadow-lg focus:bg-slate-700 focus:shadow-none active:bg-slate-700 hover:bg-slate-700 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none'
-            type='button'
-          >
-            Check
-          </button>
-        </div>
+    <Container className='grid gap-4 grid-cols-[repeat(auto-fit,minmax(240px,1fr))]'>
+      {/* add a checker when its not published dont let the player take the test */}
+      <div className='flex flex-col items-center justify-between w-64 h-80 p-6 bg-white rounded-2xl shadow-md border border-gray-200'>
+        {/* Big Emoji */}
+        <div className='flex-1 flex items-center justify-center text-8xl'>📄</div>
+
+        {/* Button */}
+        <Button
+          variant='outline'
+          className='w-full mt-4'
+          onClick={() => setIsCreateDialogOpen(true)}
+        >
+          Add Quiz
+        </Button>
       </div>
-      <div className='relative flex flex-col my-6 bg-white shadow-sm border border-slate-200 rounded-lg'>
-        <div className='relative h-56 m-2.5 overflow-hidden text-white rounded-md'>
-          <span>👨🏻‍💻</span>
-        </div>
-        <div className='p-4'>
-          <h6 className='mb-2 text-slate-800 text-xl font-semibold'>Create a Quiz</h6>
-          <p className='text-slate-600 leading-normal font-light'>Create Quiz for more challenge</p>
-        </div>
-        <div className='px-4 pb-4 pt-0 mt-2'>
-          <button
-            onClick={() => setIsCreateDialogOpen(true)}
-            className='rounded-md bg-slate-800 py-2 px-4 border border-transparent text-center text-sm text-white transition-all shadow-md hover:shadow-lg focus:bg-slate-700 focus:shadow-none active:bg-slate-700 hover:bg-slate-700 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none'
-            type='button'
-          >
-            Create Quiz
-          </button>
-        </div>
-      </div>
+      {quizzes?.map((quiz) => (
+        <QuizCard
+          key={quiz.id}
+          quiz={{ ...quiz }}
+          onView={() => navigate(`/quiz/details/${quiz.id}`)}
+          onClickAttempTest={() => handleOpenQuiz(quiz.id)}
+        />
+      ))}
 
       <CreateUpdateQuizDialog
         open={isCreateDialogOpen}
@@ -64,4 +57,4 @@ export const Quiz = () => {
       />
     </Container>
   );
-};
+}

@@ -1,163 +1,262 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo, useCallback, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-import { useStartQuiz, useSaveAnswer, useSubmitAttempt } from '../../hooks';
+import { useForm, Controller, Control } from 'react-hook-form';
+import { useStartQuiz, useSaveAnswer, useSubmitAttempt, useQuizProctor } from '../../hooks';
 import { useGetQuiz } from '../../hooks/quiz/queries/use-get-quiz-details';
 import { Label, Radio, RadioGroup } from '@headlessui/react';
 import { BiCheckCircle } from 'react-icons/bi';
+import { Button, showToast, Typography } from '../../components';
+import { QuizTimer } from './quiz-timer';
+import { PlayerScore } from './player-score';
+import { Quiz } from '../../types';
 
 type FormValues = {
-  answers: {
-    [key: string]: string | number;
-  };
+  answers: Record<string, string | number>;
 };
 
+type QuestionRendererProps = {
+  question: Quiz.Question;
+  control: Control<FormValues>;
+};
+
+const QuestionRendererComponent = ({ question, control }: QuestionRendererProps) => {
+  switch (question?.type) {
+    case 'mcq':
+      return (
+        <Controller
+          control={control}
+          name={`answers.${question.id}`}
+          render={({ field }) => (
+            <RadioGroup
+              value={field.value ?? ''}
+              onChange={field.onChange}
+            >
+              <Label className='sr-only'>Select an option</Label>
+              <div className='flex flex-col gap-2'>
+                {question?.options?.map((opt: string, idx: number) => (
+                  <Radio
+                    key={idx}
+                    value={opt}
+                    className={({ checked }) =>
+                      `relative flex cursor-pointer rounded-lg px-4 py-3 transition border 
+                      ${checked ? 'bg-blue-50 border-blue-500' : 'border-gray-300 hover:bg-gray-50'}`
+                    }
+                  >
+                    {({ checked }) => (
+                      <div className='flex w-full items-center justify-between'>
+                        <Typography>{opt}</Typography>
+                        {checked && <BiCheckCircle className='w-5 h-5 text-blue-600' />}
+                      </div>
+                    )}
+                  </Radio>
+                ))}
+              </div>
+            </RadioGroup>
+          )}
+        />
+      );
+
+    case 'short':
+      return (
+        <Controller
+          control={control}
+          name={`answers.${question.id}`}
+          render={({ field }) => (
+            <input
+              {...field}
+              value={field.value ?? ''}
+              type='text'
+              placeholder='Your answer...'
+              className='w-full rounded-md border px-3 py-2 mt-2 focus:outline-none focus:ring-1 focus:ring-blue-500'
+            />
+          )}
+        />
+      );
+
+    case 'code':
+      return (
+        <Controller
+          control={control}
+          name={`answers.${question.id}`}
+          render={({ field }) => (
+            <textarea
+              {...field}
+              value={field.value ?? ''}
+              rows={5}
+              placeholder='Write your code here...'
+              className='w-full rounded-md border px-3 py-2 font-mono mt-2 focus:outline-none focus:ring-1 focus:ring-blue-500'
+            />
+          )}
+        />
+      );
+
+    default:
+      return null;
+  }
+};
+
+QuestionRendererComponent.displayName = 'QuestionRenderer';
+
+const QuestionRenderer = memo(QuestionRendererComponent);
+
 export function PlayerPage() {
-  const { id } = useParams<{ id: string }>(); // update base on params passed onclick or url pasted
-  const { data: quiz, isLoading } = useGetQuiz(Number(1));
+  const { quizId } = useParams<{ quizId: string }>();
+
+  // add loading and empty state view
+  const { data: quiz, isLoading } = useGetQuiz(Number(quizId));
   const [currentStep, setCurrentStep] = useState(0);
-  const [attemptId, setAttemptId] = useState<number | null>(null);
 
-  const { startQuiz } = useStartQuiz({});
-  const { saveAnswer } = useSaveAnswer({ attemptId: attemptId || 0 });
-  const { submitAttempt } = useSubmitAttempt({ attemptId: attemptId || 0 });
+  // API hooks
+  const { startQuiz, data: attemptData } = useStartQuiz({});
+  const { saveAnswer } = useSaveAnswer({ attemptId: Number(attemptData?.id) || 0 });
+  const { submitAttempt, data } = useSubmitAttempt({
+    attemptId: Number(attemptData?.id) || 0,
+    onSuccess: () => {
+      showToast.info('Quiz Submitted');
+    },
+    onError: () => {
+      showToast.error('Quiz Already Submitted');
+    },
+  });
 
-  const { register, watch, setValue, handleSubmit, getValues } = useForm<FormValues>({
+  // proctor test
+  const { violations } = useQuizProctor(data === undefined);
+
+  // RHF
+  const { control, handleSubmit, getValues, reset } = useForm<FormValues>({
     defaultValues: { answers: {} },
   });
 
-  // Start quiz attempt
+  // Kick off quiz attempt once quiz is loaded
   useEffect(() => {
-    if (quiz && !attemptId) {
-      startQuiz(quiz.id, {
-        onSuccess: (data) => setAttemptId(data.id),
+    if (quiz && !attemptData) {
+      startQuiz(quiz.id);
+    }
+  }, [quiz, attemptData, startQuiz]);
+
+  useEffect(() => {
+    if (quiz) {
+      reset({
+        answers: quiz.questions.reduce((acc, q) => ({ ...acc, [q.id]: '' }), {}),
       });
     }
-  }, [quiz, attemptId]);
+  }, [quiz, reset]);
 
-  if (isLoading) return <div className='p-6'>Loading quiz...</div>;
-  if (!quiz) return <div className='p-6'>Quiz not found</div>;
+  const questions = quiz?.questions ?? [];
+  const total = questions.length;
 
-  const total = quiz.questions.length;
-  const currentQuestion = quiz.questions[currentStep];
-  const currentValue = watch(`answers.${currentQuestion.id}`);
+  const currentQuestion = useMemo(
+    () => (questions.length > 0 ? questions[currentStep] : null),
+    [questions, currentStep],
+  );
+  const autoGradableQuestions = useMemo(
+    () => quiz?.questions.filter((q) => q.type === 'mcq' || q.type === 'short'),
+    [quiz?.questions],
+  );
 
-  const handleAnswer = () => {
-    if (!attemptId) return;
-
-    // Get the current value from RHF
-    const value = getValues(`answers.${currentQuestion.id}`);
-    const questionId = currentQuestion.id;
-
-    saveAnswer({ questionId, value });
-  };
+  // Save current question’s answer before navigating
+  const handleAnswer = useCallback(() => {
+    const value = getValues(`answers.${currentQuestion?.id}`);
+    if (value !== undefined && value !== null && value !== '') {
+      saveAnswer({ questionId: Number(currentQuestion?.id), value });
+    }
+  }, [currentQuestion?.id, getValues, saveAnswer]);
 
   const onSubmit = handleSubmit(() => {
-    if (attemptId) {
-      submitAttempt(); // onsubmit show the result and then show the quiz title via modal. cannot be clicked outside just the button to go to quiz list player
-    }
+    submitAttempt();
   });
+
+  // If submitData exists, the quiz has been submitted, show PlayerScore only
+  // also when on refresh should always show this UI TODO
+  if (data) {
+    return (
+      <div className='max-w-3xl mx-auto p-6'>
+        <PlayerScore
+          score={data.score || 0}
+          total={Number(autoGradableQuestions?.length)}
+          violations={{
+            copy: violations.copy,
+            paste: violations.paste,
+            tabSwitch: violations.tabSwitch,
+            exitAttempt: violations.exitAttempt,
+          }}
+        />
+      </div>
+    );
+  }
+
   return (
-    <div className='max-w-3xl mx-auto p-6'>
-      {/* Progress */}
-      <div className='flex justify-between items-center mb-4'>
-        <h1 className='text-lg font-semibold'>{quiz.title}</h1>
-        <span className='text-sm font-medium text-gray-600'>
+    <div className='max-w-3xl mx-auto p-6 flex flex-col gap-6'>
+      <QuizTimer
+        quizId={Number(quizId)}
+        duration={Number(quiz?.timeLimitSeconds)}
+        onTimeUp={onSubmit}
+      />
+
+      {/* Header */}
+      <div className='flex justify-between items-center mt-8'>
+        <Typography
+          variant='h5'
+          className='font-semibold'
+        >
+          {quiz?.title}
+        </Typography>
+        <Typography
+          variant='caption'
+          className='text-gray-600'
+        >
           {currentStep + 1} / {total}
-        </span>
+        </Typography>
       </div>
 
       {/* Question */}
-      <div className='p-6 border rounded-lg shadow-sm bg-white'>
-        <h2 className='font-semibold mb-4'>{currentQuestion.prompt}</h2>
-
-        {/* MCQ */}
-        {currentQuestion.type === 'mcq' && currentQuestion.options && (
-          <RadioGroup
-            value={getValues(`answers.${currentQuestion.id}`) ?? null}
-            onChange={(value) => setValue(`answers.${currentQuestion.id}`, value)}
-          >
-            <Label className='sr-only'>Select an option</Label>
-            <div className='space-y-2'>
-              {currentQuestion.options.map((opt, idx) => (
-                <Radio
-                  key={idx}
-                  value={opt}
-                  className={({ checked }) =>
-                    `relative flex cursor-pointer rounded-lg bg-white/5 px-5 py-4 shadow-md transition ${
-                      checked ? 'bg-blue-100 border border-blue-400' : 'border border-gray-300'
-                    } focus:outline-none`
-                  }
-                >
-                  {({ checked }) => (
-                    <div className='flex w-full items-center justify-between'>
-                      <span className='text-gray-900'>{opt}</span>
-                      {checked && <BiCheckCircle className='w-6 h-6 text-blue-600' />}
-                    </div>
-                  )}
-                </Radio>
-              ))}
-            </div>
-          </RadioGroup>
-        )}
-
-        {/* Short Answer */}
-        {currentQuestion.type === 'short' && (
-          <input
-            {...register(`answers.${currentQuestion.id}`)}
-            value={currentValue || ''}
-            onChange={(e) => setValue(`answers.${currentQuestion.id}`, e.target.value)}
-            type='text'
-            placeholder='Your answer...'
-            className='w-full rounded-md border px-3 py-2 mt-2 focus:outline-none focus:ring-1 focus:ring-blue-500'
-          />
-        )}
-
-        {/* Code */}
-        {currentQuestion.type === 'code' && (
-          <textarea
-            {...register(`answers.${currentQuestion.id}`)}
-            value={currentValue || ''}
-            onChange={(e) => setValue(`answers.${currentQuestion.id}`, e.target.value)}
-            rows={5}
-            placeholder='Write your code here...'
-            className='w-full rounded-md border px-3 py-2 font-mono mt-2 focus:outline-none focus:ring-1 focus:ring-blue-500'
-          />
-        )}
+      <div className='p-6 border rounded-2xl shadow-sm bg-white flex flex-col gap-4'>
+        <Typography
+          variant='h6'
+          className='font-medium'
+        >
+          {currentQuestion?.prompt}
+        </Typography>
+        <QuestionRenderer
+          key={currentQuestion?.id}
+          question={currentQuestion as Quiz.Question}
+          control={control}
+        />
       </div>
 
       {/* Navigation */}
-      <div className='flex justify-between mt-6'>
-        <button
-          type='button'
+      <div className='flex justify-between items-center'>
+        <Button
+          variant='secondary'
+          size='sm'
           onClick={() => {
+            handleAnswer();
             setCurrentStep((s) => Math.max(s - 1, 0));
           }}
           disabled={currentStep === 0}
-          className='rounded-md bg-gray-300 px-4 py-2 text-sm font-medium hover:bg-gray-400 disabled:opacity-50'
         >
           Previous
-        </button>
+        </Button>
 
         {currentStep < total - 1 ? (
-          <button
-            type='button'
+          <Button
+            variant='primary'
+            size='sm'
             onClick={() => {
-              setCurrentStep((s) => Math.min(s + 1, total - 1));
               handleAnswer();
+              setCurrentStep((s) => Math.min(s + 1, total - 1));
             }}
-            className='rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700'
           >
             Next
-          </button>
+          </Button>
         ) : (
-          <button
-            type='button'
+          <Button
+            variant='primary'
+            size='sm'
             onClick={onSubmit}
-            className='rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700'
           >
             Submit
-          </button>
+          </Button>
         )}
       </div>
     </div>

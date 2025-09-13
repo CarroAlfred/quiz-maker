@@ -1,2 +1,1 @@
 export * from './create-update-quiz';
-export * from './quiz-details';
