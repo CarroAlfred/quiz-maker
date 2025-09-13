@@ -28,10 +28,10 @@ const VARIANT_MAP: Record<Variant, string> = {
   h4: 'text-xl md:text-2xl font-semibold',
   h5: 'text-lg font-medium',
   h6: 'text-base font-medium',
-  lead: 'text-lg md:text-xl text-gray-700',
-  body: 'text-base text-gray-800',
-  small: 'text-sm text-gray-700',
-  caption: 'text-xs text-gray-600',
+  lead: 'text-lg md:text-xl',
+  body: 'text-base',
+  small: 'text-sm',
+  caption: 'text-xs',
 };
 
 const WEIGHT_MAP: Record<NonNullable<TypographyOwnProps['weight']>, string> = {

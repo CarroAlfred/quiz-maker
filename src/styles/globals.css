@@ -10,7 +10,7 @@ body {
   margin: 0;
   font-family: var(--font-sans);
   background: var(--color-background);
-  color: var(--color-text-light);
+  color: var(--color-text);
 }
 
 /* For WebKit browsers (Chrome, Safari, Edge) */

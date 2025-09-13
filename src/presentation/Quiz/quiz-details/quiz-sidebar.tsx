@@ -1,16 +1,17 @@
-import { Typography } from '../../../components';
+import { FaEdit } from 'react-icons/fa';
+import { Button, Typography } from '../../../components';
 import { Quiz } from '../../../types';
 import { formatDuration } from '../../../utils';
 
-export default function QuizSidebar({
-  quiz,
-  className = '',
-}: {
+type QuizSidebarProps = {
   quiz: Quiz.QuizInfo & { questions: Quiz.Question[] };
   className?: string;
-}) {
+  onCLickEdit?: () => void;
+};
+
+export default function QuizSidebar({ quiz, className = '', onCLickEdit }: QuizSidebarProps) {
   return (
-    <aside className={`bg-white/5 py-4 ${className}`}>
+    <aside className={`bg-white/5 py-20 ${className}`}>
       <Typography
         variant='h2'
         className='capitalize px-4'
@@ -19,33 +20,86 @@ export default function QuizSidebar({
       </Typography>
       <Typography
         variant='small'
-        className='my-2 p-2 bg-gray-100 rounded-b-sm'
+        className='my-2 p-2 px-4 bg-gray-100 rounded-b-sm'
       >
         {quiz.description}
       </Typography>
 
-      <Typography as='p'>
+      <Typography
+        as='span'
+        weight='bold'
+        className='px-4 py-1 flex flex-row gap-1 justify-between'
+      >
         <Typography
-          as='p'
           weight='bold'
-          className='px-4'
+          className='text-gray-800'
         >
-          Time Limit: {formatDuration(quiz.timeLimitSeconds) ?? 'No limit'}
+          Time Limit
         </Typography>
+        <Typography>{formatDuration(quiz.timeLimitSeconds) ?? 'No limit'}</Typography>
       </Typography>
       <Typography
-        as='p'
-        className='px-4 flex flex-row gap-1'
+        as='span'
+        className='px-4 py-1 flex flex-row gap-1 justify-between'
       >
-        <Typography weight='bold'>Status:</Typography>
+        <Typography
+          weight='bold'
+          className='text-gray-800'
+        >
+          Status
+        </Typography>
         <Typography className={quiz.isPublished ? 'text-green-600' : 'text-red-500'}>
           {quiz.isPublished ? 'Published' : 'Draft'}
         </Typography>
       </Typography>
-      <p className='mt-2 text-gray-400 text-sm'>Created at: {new Date(quiz.createdAt).toLocaleString()}</p>
-      <p className='mt-4'>
-        <strong>Questions:</strong> {quiz.questions.length}
-      </p>
+      <Typography
+        variant='small'
+        as='span'
+        className='text-sm py-1 px-4 flex flex-row gap-1 justify-between'
+      >
+        <Typography
+          weight='bold'
+          className='text-gray-800'
+        >
+          Created at
+        </Typography>
+        <Typography
+          variant='small'
+          className='italic'
+        >
+          {new Date(quiz.createdAt).toLocaleString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit',
+          })}
+        </Typography>
+      </Typography>
+      <Typography
+        as='span'
+        className='px-4 py-1 flex flex-row gap-1 justify-between'
+      >
+        <Typography
+          weight='bold'
+          className='text-gray-800'
+        >
+          Questions
+        </Typography>
+        <Typography weight='semibold'> {quiz.questions.length}</Typography>
+      </Typography>
+
+      <div className='flex justify-end px-4'>
+        <Button
+          icon={<FaEdit />}
+          variant='outline'
+          size='sm'
+          className='text-xs'
+          onClick={onCLickEdit}
+        >
+          Update Details
+        </Button>
+      </div>
     </aside>
   );
 }

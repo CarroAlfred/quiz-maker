@@ -1,41 +1,50 @@
 import { useForm } from 'react-hook-form';
 import { Quiz } from '../../../types';
-import { useCreateQuiz } from '../../../hooks';
-import { DialogContainer, showToast } from '../../../components';
-import { useNavigate } from 'react-router-dom';
+import { DialogContainer } from '../../../components';
+import { useEffect } from 'react';
 
 type FormValues = Omit<Quiz.QuizInfo, 'id' | 'createdAt'>;
 
-type CreateQuizDialogProps = {
+type CreateUpdateQuizDialogProps = {
   open: boolean;
   onClose: () => void;
+  onClick?: (data: FormValues) => void;
+  isLoading?: boolean;
+  initialValues?: Partial<FormValues>;
 };
 
-export const CreateQuizDialog = ({ open, onClose }: CreateQuizDialogProps) => {
-  const navigate = useNavigate();
+export const CreateUpdateQuizDialog = ({
+  open,
+  onClose,
+  onClick,
+  isLoading,
+  initialValues,
+}: CreateUpdateQuizDialogProps) => {
   const { register, handleSubmit, reset } = useForm<FormValues>({
     defaultValues: {
       title: '',
       description: '',
       timeLimitSeconds: 300,
       isPublished: false,
+      ...initialValues,
     },
   });
 
-  const { handleCreateQuiz, isLoading } = useCreateQuiz({
-    onSuccess: () => {
-      reset();
-      showToast.success('Quiz created successfully!');
-      navigate('/quiz/list');
-      onClose();
-    },
-    onError: () => {
-      showToast.error('Quiz Error');
-    },
-  });
+  useEffect(() => {
+    if (open) {
+      reset({
+        title: '',
+        description: '',
+        timeLimitSeconds: 300,
+        isPublished: false,
+        ...initialValues,
+      });
+    }
+  }, [open, initialValues, reset]);
 
-  const onSubmit = (data: FormValues) => {
-    handleCreateQuiz(data);
+  const onSubmit = async (data: FormValues) => {
+    const success = await onClick?.(data);
+    if (success) reset();
   };
 
   return (

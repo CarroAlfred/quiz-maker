@@ -5,3 +5,4 @@ export * from './dialog';
 export * from './dropdown';
 export * from './input';
 export * from './typography';
+export * from './button';

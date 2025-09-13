@@ -39,6 +39,29 @@ export class QuizServiceApi {
     return api.post<Quiz.Question>(`/quizzes/${quizId}/questions`, data);
   }
 
+  /**
+   * Update quiz metadata
+   * @param quizId - id of the quiz
+   * @param data - question payload
+   */
+  public static updateQuizMetadata(quizId: number, data: Partial<Quiz.QuizInfo>) {
+    return api.patch<Quiz.QuizInfo>(`/quizzes/${quizId}`, data);
+  }
+
+  /**
+   * Update question (e.g., text, options, position for reordering)
+   */
+  public static updateQuestion(questionId: number, data: Partial<Quiz.Question>) {
+    return api.patch<Quiz.Question>(`/questions/${questionId}`, data);
+  }
+
+  /**
+   * Delete a question by id
+   */
+  public static deleteQuizQuestion(questionId: number) {
+    return api.delete<void>(`/questions/${questionId}`);
+  }
+
   // submit
 
   public static startQuiz(quizId: number) {

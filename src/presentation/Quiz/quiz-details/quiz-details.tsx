@@ -1,21 +1,37 @@
 import { useNavigate, useParams } from 'react-router-dom';
-import { Container } from '../../../components';
+import { Button, Container, showToast } from '../../../components';
 import QuizSidebar from './quiz-sidebar';
 import QuestionCard from './question-card';
-import { useGetQuiz } from '../../../hooks/quiz/queries/use-get-quiz-details';
 import { useState } from 'react';
-import MultiQuestionDialog from '../question/create-question/create-question';
+import { MultiQuestionDialog } from '../question';
+import { CreateUpdateQuizDialog } from '../create-quiz';
+import { useUpdateQuizMetadata, useGetQuiz } from '../../../hooks';
+import { BsArrowLeft, BsPlusCircle } from 'react-icons/bs';
 
 export function QuizDetailsPage() {
   const { id } = useParams<{ id: string }>();
   const [showQuestionForm, setShowQuestionForm] = useState(false);
+
+  const [isShowUpdateQuizForm, setIsShowUpdateQuizForm] = useState(false);
+
   const navigate = useNavigate();
 
   const { data: quiz, isLoading } = useGetQuiz(Number(id));
+  const { isLoading: updateLoading, handleUpdateQuiz } = useUpdateQuizMetadata({
+    quizId: Number(id),
+    onSuccess: () => {
+      // TODO show toast
+      setIsShowUpdateQuizForm(false);
+      showToast.success('Quiz updated successfully!');
+    },
+    onError: () => {
+      showToast.error('Error updating quiz');
+    },
+  });
 
   // FIX THE LAYOUT LATER
   return (
-    <div className='flex h-screen'>
+    <Container className='flex h-screen'>
       {/* Sidebar */}
       <QuizSidebar
         quiz={{
@@ -27,27 +43,31 @@ export function QuizDetailsPage() {
           createdAt: quiz?.createdAt || '',
           questions: quiz?.questions || [],
         }}
-        className='w-full md:w-1/4 border-r-4 border-gray-200'
+        className='w-full md:w-1/4'
+        onCLickEdit={() => setIsShowUpdateQuizForm(true)}
       />
 
       {/* Main content */}
       <main className='flex-1 overflow-auto p-6'>
         <div className='flex justify-between items-center mb-4'>
-          <button
-            type='button'
+          <Button
+            variant='ghost'
+            icon={<BsArrowLeft />}
             onClick={() => navigate(-1)}
           >
             Go back to List
-          </button>
-          <button
-            type='button'
+          </Button>
+          <Button
+            variant='outline'
+            icon={<BsPlusCircle />}
+            size='sm'
             onClick={() => setShowQuestionForm(true)}
           >
             Add Question
-          </button>
+          </Button>
         </div>
 
-        <Container className='flex-1 grid gap-4 grid-row-[repeat(auto-fit,minmax(250px,1fr))] py-4'>
+        <div className='flex-1 grid gap-4 grid-row-[repeat(auto-fit,minmax(250px,1fr))] py-4'>
           {/* TODO ADD LOADING AND EMTPY VIEW */}
           {quiz?.questions.map((question) => (
             <QuestionCard
@@ -55,7 +75,7 @@ export function QuizDetailsPage() {
               question={question}
             />
           ))}
-        </Container>
+        </div>
       </main>
 
       <MultiQuestionDialog
@@ -63,6 +83,13 @@ export function QuizDetailsPage() {
         quizId={Number(id)}
         onClose={() => setShowQuestionForm(false)}
       />
-    </div>
+
+      <CreateUpdateQuizDialog
+        open={isShowUpdateQuizForm}
+        onClose={() => setIsShowUpdateQuizForm(false)}
+        initialValues={{ ...quiz }}
+        onClick={handleUpdateQuiz}
+      />
+    </Container>
   );
 }

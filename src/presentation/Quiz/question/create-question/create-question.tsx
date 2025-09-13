@@ -1,7 +1,8 @@
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { useCreateQuestion } from '../../../../hooks';
 import { Quiz } from '../../../../types';
-import { DialogContainer, Dropdown, TextArea, TextInput } from '../../../../components';
+import { DialogContainer, Dropdown, showToast, TextArea, TextInput, Button, Typography } from '../../../../components';
+import { BsPlusCircle } from 'react-icons/bs';
 
 type FormValues = {
   questions: Omit<Quiz.Question, 'id' | 'quizId'>[];
@@ -13,17 +14,25 @@ type MultiQuestionDialogProps = {
   quizId: number;
 };
 
-// TODO POLISH THE FLOW
-
-export default function MultiQuestionDialog({ open, onClose, quizId }: MultiQuestionDialogProps) {
-  const { control, register, handleSubmit, reset, watch } = useForm<FormValues>({
+export function MultiQuestionDialog({ open, onClose, quizId }: MultiQuestionDialogProps) {
+  const {
+    control,
+    register,
+    handleSubmit,
+    reset,
+    watch,
+    formState: { errors },
+    trigger,
+  } = useForm<FormValues>({
+    mode: 'onChange',
+    reValidateMode: 'onChange',
     defaultValues: {
       questions: [
         {
           type: 'short',
           prompt: '',
-          correctAnswer: '', // not null
-          options: [], // only if MCQ
+          correctAnswer: '',
+          options: [],
           position: 0,
         },
       ],
@@ -45,9 +54,12 @@ export default function MultiQuestionDialog({ open, onClose, quizId }: MultiQues
     quizId,
     onSuccess: () => {
       reset();
+      showToast.success('Questions created successfully!');
       onClose();
     },
-    onError: (err) => console.error(err),
+    onError: () => {
+      showToast.error('Questions creation failed.');
+    },
   });
 
   const onSubmit = (data: FormValues) => {
@@ -57,35 +69,38 @@ export default function MultiQuestionDialog({ open, onClose, quizId }: MultiQues
         prompt: q.prompt,
         position: q.position,
         correctAnswer: q.correctAnswer ?? '',
-        ...(q.type === 'mcq' ? { options: q.options } : {}), // ✅ strip options for non-MCQ
+        ...(q.type === 'mcq' ? { options: q.options } : {}),
       };
 
       handleCreateQuestion(payload);
     });
   };
 
+  const handleClose = () => {
+    reset();
+    onClose();
+  };
+
   return (
     <DialogContainer
       open={open}
-      onClose={onClose}
+      onClose={handleClose}
       title='Add Questions'
       footer={
-        <div className='flex gap-2'>
-          <button
-            type='button'
-            onClick={onClose}
-            className='rounded-md bg-gray-300 px-4 py-2 text-sm font-medium hover:bg-gray-400'
+        <div className='flex justify-end gap-2'>
+          <Button
+            variant='secondary'
+            onClick={handleClose}
           >
-            Cancel
-          </button>
-          <button
-            type='submit'
-            onClick={handleSubmit(onSubmit)}
+            <Typography variant='small'>Cancel</Typography>
+          </Button>
+          <Button
+            variant='outline'
             disabled={isLoading}
-            className='rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50'
+            onClick={handleSubmit(onSubmit)}
           >
-            {isLoading ? 'Creating...' : 'Create All'}
-          </button>
+            <Typography variant='small'>{isLoading ? 'Creating...' : 'Add Question'}</Typography>
+          </Button>
         </div>
       }
     >
@@ -95,110 +110,126 @@ export default function MultiQuestionDialog({ open, onClose, quizId }: MultiQues
           return (
             <div
               key={field.id}
-              className='p-4 border-b-2'
+              className='p-4 border rounded-lg space-y-4 '
             >
-              <div className='flex justify-between items-center mb-2'>
-                <h4 className='font-large'>Question {index + 1}</h4>
+              <div className='flex justify-between items-center'>
+                <Typography variant='h6'>Question {index + 1}</Typography>
                 {fields.length > 1 && (
-                  <button
-                    type='button'
+                  <Button
+                    variant='text'
+                    size='sm'
                     onClick={() => remove(index)}
-                    className='text-red-500 text-sm'
+                    className='text-red-500'
                   >
-                    Remove
-                  </button>
+                    <Typography variant='caption'>Remove</Typography>
+                  </Button>
                 )}
               </div>
 
               {/* Type */}
-
               <Controller
                 name={`questions.${index}.type`}
                 control={control}
                 render={({ field }) => (
-                  <div className='flex flex-col mb-2'>
-                    <label
-                      htmlFor={`questions.${index}.type`}
-                      className='text-sm font-medium mb-2 text-gray-700'
+                  <div className='flex flex-col gap-1'>
+                    <Typography
+                      variant='caption'
+                      className='text-gray-700'
                     >
                       Question Type
-                    </label>
+                    </Typography>
                     <Dropdown
                       value={field.value}
                       items={questionTypes.map((t) => ({
                         id: t.value,
                         label: t.label,
                       }))}
-                      onChange={(item) => field.onChange(item.id)} // ✅
+                      onChange={(item) => field.onChange(item.id)}
                     />
                   </div>
                 )}
               />
 
               {/* Prompt */}
-              <div className='flex flex-col mb-2'>
-                <label
-                  htmlFor={`questions.${index}.prompt`}
-                  className='text-sm font-medium text-gray-700'
+              <div className='flex flex-col gap-1'>
+                <Typography
+                  variant='caption'
+                  className='text-gray-700'
                 >
                   Prompt
-                </label>
+                </Typography>
                 <TextArea
-                  {...register(`questions.${index}.prompt` as const)}
+                  error={errors?.questions?.[index]?.prompt?.message}
+                  {...register(`questions.${index}.prompt` as const, {
+                    required: 'Prompt is required',
+                  })}
                   placeholder='Enter question prompt'
                 />
               </div>
 
               {/* Conditional fields */}
               {type === 'mcq' && (
-                <div className='flex flex-col mb-2'>
-                  <label
-                    htmlFor={`questions.${index}.options`}
-                    className='text-sm font-medium text-gray-700'
-                  >
-                    Choices
-                  </label>
-                  <div className='flex flex-col gap-2'>
-                    {Array.from({ length: 4 }).map((_, optIdx) => (
-                      <TextInput
-                        key={optIdx}
-                        {...register(`questions.${index}.options.${optIdx}` as const)}
-                        placeholder={`Option ${optIdx + 1}`}
-                      />
-                    ))}
+                <div className='space-y-2'>
+                  <div className='flex flex-col gap-1'>
+                    <Typography
+                      variant='caption'
+                      className='text-gray-700'
+                    >
+                      Choices
+                    </Typography>
+                    <div className='flex flex-col gap-2'>
+                      {Array.from({ length: 4 }).map((_, optIdx) => (
+                        <TextInput
+                          key={optIdx}
+                          error={errors?.questions?.[index]?.options?.[optIdx]?.message}
+                          {...register(`questions.${index}.options.${optIdx}` as const, {
+                            required: 'Option is required',
+                          })}
+                          placeholder={`Option ${optIdx + 1}`}
+                        />
+                      ))}
+                    </div>
                   </div>
 
-                  <label
-                    htmlFor={`questions.${index}.correctAnswer`}
-                    className='text-sm font-medium text-gray-700 mt-1'
-                  >
-                    Correct Option Index (0-3)
-                  </label>
-                  <TextInput
-                    type='number'
-                    min={0}
-                    max={3}
-                    {...register(`questions.${index}.correctAnswer` as const, {
-                      setValueAs: (v) => (v === '' ? undefined : Number(v)), // ✅ safer than valueAsNumber
-                    })}
-                  />
+                  <div className='flex flex-col gap-1'>
+                    <Typography
+                      variant='caption'
+                      className='text-gray-700'
+                    >
+                      Correct Answer Index (0-3)
+                    </Typography>
+                    <TextInput
+                      type='number'
+                      min={0}
+                      max={3}
+                      error={errors?.questions?.[index]?.correctAnswer?.message}
+                      {...register(`questions.${index}.correctAnswer` as const, {
+                        required: 'Correct option index is required',
+                        valueAsNumber: true,
+                        validate: (v) => {
+                          const num = typeof v === 'number' ? v : Number(v);
+                          if (typeof num !== 'number' || isNaN(num)) return 'Must be between 0 and 3';
+                          return num >= 0 && num <= 3 ? true : 'Must be between 0 and 3';
+                        },
+                      })}
+                    />
+                  </div>
                 </div>
               )}
 
               {type === 'short' && (
-                <div className='flex flex-col mb-2'>
-                  <label
-                    htmlFor={`questions.${index}.correctAnswer`}
-                    className='text-sm font-medium text-gray-700'
+                <div className='flex flex-col gap-1'>
+                  <Typography
+                    variant='caption'
+                    className='text-gray-700'
                   >
                     Answer
-                  </label>
+                  </Typography>
                   <TextInput
-                    type='number'
-                    min={0}
-                    max={3}
+                    error={errors?.questions?.[index]?.correctAnswer?.message}
                     {...register(`questions.${index}.correctAnswer`, {
-                      setValueAs: (v) => (v === '' ? '' : String(v)), // ensure string
+                      setValueAs: (v) => (v === '' ? '' : String(v)),
+                      required: 'Answer is required',
                     })}
                     placeholder='Correct answer text'
                   />
@@ -206,16 +237,17 @@ export default function MultiQuestionDialog({ open, onClose, quizId }: MultiQues
               )}
 
               {type === 'code' && (
-                <div className='flex flex-col mb-2'>
-                  <label
-                    htmlFor={`questions.${index}.correctAnswer`}
-                    className='text-sm font-medium text-gray-700'
+                <div className='flex flex-col gap-1'>
+                  <Typography
+                    variant='caption'
+                    className='text-gray-700'
                   >
                     Solution Code
-                  </label>
+                  </Typography>
                   <textarea
                     {...register(`questions.${index}.correctAnswer`, {
-                      setValueAs: (v) => (v === '' ? '' : String(v)), // ensure string
+                      setValueAs: (v) => (v === '' ? '' : String(v)),
+                      required: 'Answer is required',
                     })}
                     rows={4}
                     className='mt-1 rounded-md border px-3 py-2 font-mono focus:outline-none focus:ring-1 focus:ring-blue-500'
@@ -226,22 +258,27 @@ export default function MultiQuestionDialog({ open, onClose, quizId }: MultiQues
             </div>
           );
         })}
-
-        <button
-          type='button'
-          onClick={() =>
-            append({
-              type: 'mcq',
-              prompt: '',
-              options: ['', '', '', ''],
-              correctAnswer: '',
-              position: 0,
-            })
-          }
-          className='mt-2 rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700'
-        >
-          Add Another Question
-        </button>
+        <div className='flex justify-end'>
+          <Button
+            variant='outline'
+            icon={<BsPlusCircle />}
+            size='lg'
+            onClick={async () => {
+              const isValid = await trigger('questions'); // ✅ validates all questions
+              if (!isValid) return;
+              append({
+                type: 'mcq',
+                prompt: '',
+                options: ['', '', '', ''],
+                correctAnswer: '',
+                position: 0,
+              });
+            }}
+            className='self-start'
+          >
+            <Typography variant='caption'>Add Another Question</Typography>
+          </Button>
+        </div>
       </form>
     </DialogContainer>
   );

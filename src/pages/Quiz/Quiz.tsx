@@ -1,10 +1,21 @@
 import { useNavigate } from 'react-router-dom';
-import { Container } from '../../components';
-import { CreateQuizDialog } from '../../presentation';
+import { Container, showToast } from '../../components';
+import { CreateUpdateQuizDialog } from '../../presentation';
 import { useState } from 'react';
+import { useCreateQuiz } from '../../hooks';
 
 export const Quiz = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const { handleCreateQuiz, isLoading } = useCreateQuiz({
+    onSuccess: () => {
+      showToast.success('Quiz created successfully!');
+      navigate('/quiz/list');
+      setIsCreateDialogOpen(false);
+    },
+    onError: () => {
+      showToast.error('Quiz Error');
+    },
+  });
   const navigate = useNavigate();
   return (
     <Container className='grid grid-cols-2 gap-6 place-items-center h-full'>
@@ -45,9 +56,11 @@ export const Quiz = () => {
         </div>
       </div>
 
-      <CreateQuizDialog
+      <CreateUpdateQuizDialog
         open={isCreateDialogOpen}
         onClose={() => setIsCreateDialogOpen(false)}
+        onClick={handleCreateQuiz}
+        isLoading={isLoading}
       />
     </Container>
   );
