@@ -15,7 +15,9 @@ export function Player() {
 
   // API hooks
   const { startQuiz, data: attemptData } = useStartQuiz({});
-  const { saveAnswer } = useSaveAnswer({ attemptId: Number(attemptData?.id) || 0 });
+  const { saveAnswer } = useSaveAnswer({
+    attemptId: Number(attemptData?.id) || 0,
+  });
   const {
     submitAttempt,
     data,
