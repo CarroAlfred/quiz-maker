@@ -160,7 +160,7 @@ yarn build
 ### Common Hooks
 
 - `useGetQuiz` → Fetch quiz details.
-- `useGetCountries` / `useGetStatesDetails` → Fetch country/state data.
+- `useGetQuizList` -> Fetch quiz list.
 
 ---
 
