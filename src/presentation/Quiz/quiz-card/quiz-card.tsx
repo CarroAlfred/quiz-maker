@@ -33,7 +33,7 @@ export function QuizCard({ quiz, onClickAttempTest, onView: onClickView }: QuizC
           variant='h6'
           className='flex flex-col items-center gap-2'
         >
-          <div className='flex-1 flex items-center justify-center text-8xl'>📚</div>
+          <span className='flex-1 flex items-center justify-center text-8xl'>📚</span>
           {quiz.title}
         </Typography>
         <Typography

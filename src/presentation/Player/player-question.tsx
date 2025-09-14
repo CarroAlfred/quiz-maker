@@ -31,7 +31,7 @@ const QuestionRendererComponent = ({ question, control }: QuestionRendererProps)
                 {question?.options?.map((opt: string, idx: number) => (
                   <Radio
                     key={idx}
-                    value={opt}
+                    value={idx}
                     className={({ checked }) =>
                       `relative flex cursor-pointer rounded-lg px-4 py-3 transition border 
                       ${checked ? 'bg-blue-50 border-blue-500' : 'border-gray-300 hover:bg-gray-50'}`

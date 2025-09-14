@@ -28,9 +28,14 @@ export function useSaveAnswer({
     onError,
   });
 
+  const saveAnswer = (body: { questionId: number; value: string | number }) => {
+    if (!attemptId) return; // skip if attemptId not ready
+    mutation.mutate(body);
+  };
+
   return {
     ...mutation,
     isLoading: mutation.isPending,
-    saveAnswer: mutation.mutate,
+    saveAnswer,
   };
 }

@@ -4,7 +4,7 @@ import { Quiz } from '../../../types';
 
 export function useGetQuizList(): UseQueryResult<Quiz.QuizInfo[], Error> {
   return useQuery({
-    queryKey: ['quizzes'],
+    queryKey: ['quiz'],
     queryFn: () => QuizServiceApi.getAllQuiz(), // directly return promise
     staleTime: 1000 * 60 * 5,
     retry: 1,

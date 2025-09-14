@@ -18,11 +18,12 @@ export function useUpdateQuizMetadata({
       const res = await QuizServiceApi.updateQuizMetadata(quizId, data);
       return res;
     },
-    onSuccess: () => {
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['quiz'] }),
+        queryClient.invalidateQueries({ queryKey: ['quiz', quizId] }),
+      ]);
       onSuccess();
-      queryClient.invalidateQueries({
-        queryKey: ['quiz', quizId],
-      });
     },
     onError,
   });

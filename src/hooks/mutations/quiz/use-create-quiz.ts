@@ -19,7 +19,7 @@ export function useCreateQuiz({
     onSuccess: (data) => {
       onSuccess(data);
       queryClient.invalidateQueries({
-        queryKey: ['quizzes'],
+        queryKey: ['quiz'],
       });
     },
     onError,

@@ -36,7 +36,7 @@ export default function QuizSidebar({ quiz, className = '', onCLickEdit }: QuizS
         >
           Quiz Id
         </Typography>
-        <Typography>{quiz.id}</Typography>
+        {quiz?.id && <Typography>{quiz?.id}</Typography>}
       </Typography>
 
       <Typography

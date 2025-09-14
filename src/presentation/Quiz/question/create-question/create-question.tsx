@@ -1,8 +1,9 @@
-import { useForm, useFieldArray, Controller } from 'react-hook-form';
+import { useForm, useFieldArray } from 'react-hook-form';
 import { useCreateQuestion } from '../../../../hooks';
 import { Quiz } from '../../../../types';
-import { DialogContainer, Dropdown, showToast, TextArea, TextInput, Button, Typography } from '../../../../components';
+import { DialogContainer, showToast, Button, Typography } from '../../../../components';
 import { BsPlusCircle } from 'react-icons/bs';
+import { QuestionItem } from './question-item';
 
 type FormValues = {
   questions: Omit<Quiz.Question, 'id' | 'quizId'>[];
@@ -20,7 +21,7 @@ export function MultiQuestionDialog({ open, onClose, quizId }: MultiQuestionDial
     register,
     handleSubmit,
     reset,
-    watch,
+    setValue,
     formState: { errors },
     trigger,
   } = useForm<FormValues>({
@@ -43,12 +44,6 @@ export function MultiQuestionDialog({ open, onClose, quizId }: MultiQuestionDial
     control,
     name: 'questions',
   });
-
-  const questionTypes = [
-    { value: 'mcq', label: 'Multiple Choice' },
-    { value: 'short', label: 'Short Answer' },
-    { value: 'code', label: 'Code' },
-  ];
 
   const { handleCreateQuestion, isLoading } = useCreateQuestion({
     quizId,
@@ -105,159 +100,19 @@ export function MultiQuestionDialog({ open, onClose, quizId }: MultiQuestionDial
       }
     >
       <form className='flex flex-col gap-6'>
-        {fields.map((field, index) => {
-          const type = watch(`questions.${index}.type`);
-          return (
-            <div
-              key={field.id}
-              className='p-4 border rounded-lg space-y-4 '
-            >
-              <div className='flex justify-between items-center'>
-                <Typography variant='h6'>Question {index + 1}</Typography>
-                {fields.length > 1 && (
-                  <Button
-                    variant='text'
-                    size='sm'
-                    onClick={() => remove(index)}
-                    className='text-red-500'
-                  >
-                    <Typography variant='caption'>Remove</Typography>
-                  </Button>
-                )}
-              </div>
-
-              {/* Type */}
-              <Controller
-                name={`questions.${index}.type`}
-                control={control}
-                render={({ field }) => (
-                  <div className='flex flex-col gap-1'>
-                    <Typography
-                      variant='caption'
-                      className='text-gray-700'
-                    >
-                      Question Type
-                    </Typography>
-                    <Dropdown
-                      value={field.value}
-                      items={questionTypes.map((type) => ({
-                        id: type.value,
-                        label: type.label,
-                      }))}
-                      onChange={(item) => field.onChange(item.id)}
-                    />
-                  </div>
-                )}
-              />
-
-              {/* Prompt */}
-              <div className='flex flex-col gap-1'>
-                <Typography
-                  variant='caption'
-                  className='text-gray-700'
-                >
-                  Prompt
-                </Typography>
-                <TextArea
-                  error={errors?.questions?.[index]?.prompt?.message}
-                  {...register(`questions.${index}.prompt` as const, {
-                    required: 'Prompt is required',
-                  })}
-                  placeholder='Enter question prompt'
-                />
-              </div>
-
-              {/* Conditional fields */}
-              {type === 'mcq' && (
-                <div className='space-y-2'>
-                  <div className='flex flex-col gap-1'>
-                    <Typography
-                      variant='caption'
-                      className='text-gray-700'
-                    >
-                      Choices
-                    </Typography>
-                    <div className='flex flex-col gap-2'>
-                      {Array.from({ length: 4 }).map((_, optIdx) => (
-                        <TextInput
-                          key={optIdx}
-                          error={errors?.questions?.[index]?.options?.[optIdx]?.message}
-                          {...register(`questions.${index}.options.${optIdx}` as const, {
-                            required: 'Option is required',
-                          })}
-                          placeholder={`Option ${optIdx + 1}`}
-                        />
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className='flex flex-col gap-1'>
-                    <Typography
-                      variant='caption'
-                      className='text-gray-700'
-                    >
-                      Correct Answer Index (0-3)
-                    </Typography>
-                    <TextInput
-                      type='number'
-                      min={0}
-                      max={3}
-                      error={errors?.questions?.[index]?.correctAnswer?.message}
-                      {...register(`questions.${index}.correctAnswer` as const, {
-                        required: 'Correct option index is required',
-                        valueAsNumber: true,
-                        validate: (v) => {
-                          const num = typeof v === 'number' ? v : Number(v);
-                          if (typeof num !== 'number' || isNaN(num)) return 'Must be between 0 and 3';
-                          return num >= 0 && num <= 3 ? true : 'Must be between 0 and 3';
-                        },
-                      })}
-                    />
-                  </div>
-                </div>
-              )}
-
-              {type === 'short' && (
-                <div className='flex flex-col gap-1'>
-                  <Typography
-                    variant='caption'
-                    className='text-gray-700'
-                  >
-                    Answer
-                  </Typography>
-                  <TextInput
-                    error={errors?.questions?.[index]?.correctAnswer?.message}
-                    {...register(`questions.${index}.correctAnswer`, {
-                      setValueAs: (v) => (v === '' ? '' : String(v)),
-                      required: 'Answer is required',
-                    })}
-                    placeholder='Correct answer text'
-                  />
-                </div>
-              )}
-
-              {type === 'code' && (
-                <div className='flex flex-col gap-1'>
-                  <Typography
-                    variant='caption'
-                    className='text-gray-700'
-                  >
-                    Solution Code
-                  </Typography>
-                  <textarea
-                    {...register(`questions.${index}.correctAnswer`, {
-                      setValueAs: (v) => (v === '' ? '' : String(v)),
-                      required: 'Answer is required',
-                    })}
-                    rows={4}
-                    className='mt-1 rounded-md border px-3 py-2 font-mono focus:outline-none focus:ring-1 focus:ring-blue-500'
-                    placeholder='Enter correct code'
-                  />
-                </div>
-              )}
-            </div>
-          );
-        })}
+        {fields.map((field, index) => (
+          <QuestionItem
+            setValue={setValue}
+            key={field.id}
+            field={field}
+            index={index}
+            control={control}
+            register={register}
+            errors={errors}
+            remove={remove}
+            fieldsLength={fields.length}
+          />
+        ))}
         <div className='flex justify-end'>
           <Button
             variant='outline'
@@ -267,9 +122,9 @@ export function MultiQuestionDialog({ open, onClose, quizId }: MultiQuestionDial
               const isValid = await trigger('questions'); // validates all questions
               if (!isValid) return;
               append({
-                type: 'mcq',
+                type: 'short',
                 prompt: '',
-                options: ['', '', '', ''], // max to 4 options
+                options: [],
                 correctAnswer: '',
                 position: 0,
               });

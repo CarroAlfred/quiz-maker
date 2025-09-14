@@ -14,18 +14,26 @@ export function Player() {
   const [currentStep, setCurrentStep] = useState(0);
 
   // API hooks
-  const { startQuiz, data: attemptData } = useStartQuiz({});
+  const {
+    startQuiz,
+    data: attemptData,
+    isLoading: isStartLoading,
+  } = useStartQuiz({
+    onError: () => {
+      showToast.warn('Quiz Already Submitted');
+    },
+  });
   const { saveAnswer } = useSaveAnswer({
-    attemptId: Number(attemptData?.id) || 0,
+    attemptId: Number(attemptData?.id),
   });
   const {
     submitAttempt,
     data,
     isLoading: isLoadingSubmit,
   } = useSubmitAttempt({
-    attemptId: Number(attemptData?.id) || 0,
+    attemptId: Number(attemptData?.id),
     onSuccess: () => {
-      showToast.info('Quiz Submitted');
+      showToast.success('Quiz Submitted');
     },
     onError: () => {
       showToast.error('Quiz Already Submitted');
@@ -36,24 +44,16 @@ export function Player() {
   const { violations } = useQuizProctor(data === undefined);
 
   // RHF
-  const { control, handleSubmit, getValues, reset } = useForm<FormValues>({
+  const { control, handleSubmit, getValues } = useForm<FormValues>({
     defaultValues: { answers: {} },
   });
 
   // Kick off quiz attempt once quiz is loaded
   useEffect(() => {
-    if (quiz && !attemptData) {
+    if (quiz) {
       startQuiz(quiz.id);
     }
-  }, [quiz, attemptData, startQuiz]);
-
-  useEffect(() => {
-    if (quiz) {
-      reset({
-        answers: quiz.questions.reduce((acc, q) => ({ ...acc, [q.id]: '' }), {}),
-      });
-    }
-  }, [quiz, reset]);
+  }, [quiz]);
 
   const questions = quiz?.questions ?? [];
   const total = questions.length;
@@ -85,7 +85,7 @@ export function Player() {
     return (
       <div className='max-w-3xl mx-auto'>
         <PlayerScore
-          score={data.score || 0}
+          score={data?.score || 0}
           total={Number(autoGradableQuestions?.length)}
           violations={{
             copy: violations.copy,
@@ -100,7 +100,7 @@ export function Player() {
 
   return (
     <div className='max-w-3xl mx-auto p-6 flex flex-col gap-6'>
-      {isLoading && (
+      {(isLoading || isStartLoading) && (
         <Loader
           overlay={true}
           size={40}
@@ -149,7 +149,6 @@ export function Player() {
           variant='secondary'
           size='sm'
           onClick={() => {
-            handleAnswer();
             setCurrentStep((s) => Math.max(s - 1, 0));
           }}
           disabled={currentStep === 0}
@@ -175,7 +174,7 @@ export function Player() {
             disabled={isLoadingSubmit}
             onClick={async () => {
               await handleAnswer();
-              onSubmit();
+              await submitAttempt();
             }}
           >
             {isLoadingSubmit ? <Loader size={5} /> : 'Submit'}
