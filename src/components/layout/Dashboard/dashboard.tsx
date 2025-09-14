@@ -5,10 +5,10 @@ export function Dashboard() {
   return (
     <div className='flex min-h-screen bg-gray-50'>
       {/* Sidebar */}
-      <aside className='w-64 border-r shadow-sm flex flex-col'>
+      <aside className='w-64 border-r border-gray-300  flex flex-col'>
         <Typography
           variant='h4'
-          className='p-4 border-b'
+          className='p-4 border-b border-gray-300'
         >
           Quiz App
         </Typography>

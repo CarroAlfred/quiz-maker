@@ -1,8 +1,8 @@
-import { Button, Container, QuizCard, showToast } from '../../components';
+import { Button, Card, Container, showToast } from '../../components';
 import { useCreateQuiz, useGetQuizList } from '../../hooks';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { CreateUpdateQuizDialog } from '../../presentation';
+import { CreateUpdateQuizDialog, QuizCard } from '../../presentation';
 
 export function Quiz() {
   const navigate = useNavigate();
@@ -26,7 +26,7 @@ export function Quiz() {
 
   return (
     <Container className='grid gap-4 grid-cols-[repeat(auto-fit,minmax(220px,1fr))]'>
-      <div className='flex flex-col items-center justify-between h-auto p-6 bg-white rounded-2xl shadow-md border border-gray-200'>
+      <Card>
         <div className='flex-1 flex items-center justify-center text-8xl'>📄</div>
 
         {/* Button */}
@@ -37,7 +37,7 @@ export function Quiz() {
         >
           Add Quiz
         </Button>
-      </div>
+      </Card>
       {quizzes?.map((quiz) => (
         <QuizCard
           key={quiz.id}

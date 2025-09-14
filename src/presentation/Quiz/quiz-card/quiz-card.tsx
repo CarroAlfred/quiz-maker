@@ -1,9 +1,10 @@
 import { Quiz } from '../../../types';
 import { FaCalendarAlt, FaClock, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
-import { Typography } from '../typography';
-import { Button } from '../button';
+import { Typography } from '../../../components/common/typography';
+import { Button } from '../../../components/common/button';
 import { formatDuration } from '../../../utils';
 import { FiEdit } from 'react-icons/fi';
+import { Card } from '../../../components/common/card';
 
 type QuizCardProps = {
   quiz: Quiz.QuizInfo;
@@ -13,7 +14,7 @@ type QuizCardProps = {
 
 export function QuizCard({ quiz, onClickAttempTest, onView: onClickView }: QuizCardProps) {
   return (
-    <div className='relative rounded-2xl bg-white group shadow hover:shadow-md transition border border-gray-100 p-6 flex flex-col justify-between'>
+    <Card>
       {onClickView && (
         <div className='hidden group-hover:flex absolute -right-[10px] -top-[10px] transition-all duration-200'>
           <Button
@@ -108,6 +109,6 @@ export function QuizCard({ quiz, onClickAttempTest, onView: onClickView }: QuizC
           </Button>
         )}
       </div>
-    </div>
+    </Card>
   );
 }

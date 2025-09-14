@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button, DeleteConfirmationDialog, showToast, Typography } from '../../../components';
+import { Button, Card, DeleteConfirmationDialog, showToast, Typography } from '../../../components';
 import { Quiz } from '../../../types';
 import { useDeleteQuestion } from '../../../hooks';
 import { UpdateQuestionDialog } from '../question';
@@ -25,7 +25,7 @@ export default function QuestionCard({ question, questionCount }: QuestionCardPr
   });
 
   return (
-    <div className='p-4 rounded-xl bg-white/5 backdrop-blur-sm border border-gray-200 group hover:shadow-md transition-shadow'>
+    <Card>
       <div className='flex justify-between items-center'>
         <Typography
           variant='h5'
@@ -105,6 +105,6 @@ export default function QuestionCard({ question, questionCount }: QuestionCardPr
         onConfirm={() => handleDeleteQuestion(question.id)}
         isLoading={isLoading}
       />
-    </div>
+    </Card>
   );
 }

@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useStartQuiz, useSaveAnswer, useSubmitAttempt, useQuizProctor } from '../../hooks';
 import { useGetQuiz } from '../../hooks/queries/quiz/use-get-quiz-details';
-import { Button, Loader, showToast, Typography } from '../../components';
+import { Button, Card, Loader, showToast, Typography } from '../../components';
 import { Quiz } from '../../types';
 import { FormValues, PlayerScore, PlayerTimer, QuestionRenderer } from '../../presentation/';
 
@@ -81,7 +81,7 @@ export function Player() {
   // also when on refresh should always show this UI TODO
   if (data) {
     return (
-      <div className='max-w-3xl mx-auto p-6'>
+      <div className='max-w-3xl mx-auto'>
         <PlayerScore
           score={data.score || 0}
           total={Number(autoGradableQuestions?.length)}
@@ -127,7 +127,7 @@ export function Player() {
       </div>
 
       {/* Question */}
-      <div className='p-6 border rounded-2xl shadow-sm bg-white flex flex-col gap-4'>
+      <Card className='p-6 gap-4'>
         <Typography
           variant='h6'
           className='font-medium'
@@ -139,7 +139,7 @@ export function Player() {
           question={currentQuestion as Quiz.Question}
           control={control}
         />
-      </div>
+      </Card>
 
       {/* Navigation */}
       <div className='flex justify-between items-center'>
