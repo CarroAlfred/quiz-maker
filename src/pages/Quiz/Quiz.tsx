@@ -25,10 +25,8 @@ export function Quiz() {
   };
 
   return (
-    <Container className='grid gap-4 grid-cols-[repeat(auto-fit,minmax(240px,1fr))]'>
-      {/* add a checker when its not published dont let the player take the test */}
-      <div className='flex flex-col items-center justify-between w-64 h-80 p-6 bg-white rounded-2xl shadow-md border border-gray-200'>
-        {/* Big Emoji */}
+    <Container className='grid gap-4 grid-cols-[repeat(auto-fit,minmax(220px,1fr))]'>
+      <div className='flex flex-col items-center justify-between h-auto p-6 bg-white rounded-2xl shadow-md border border-gray-200'>
         <div className='flex-1 flex items-center justify-center text-8xl'>📄</div>
 
         {/* Button */}

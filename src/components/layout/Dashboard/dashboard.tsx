@@ -5,7 +5,7 @@ export function Dashboard() {
   return (
     <div className='flex min-h-screen bg-gray-50'>
       {/* Sidebar */}
-      <aside className='w-64 bg-white border-r shadow-sm flex flex-col'>
+      <aside className='w-64 border-r shadow-sm flex flex-col'>
         <div className='p-4 font-bold text-lg border-b'>Quiz App</div>
         <nav className='flex-1 p-4 space-y-2'>
           <a

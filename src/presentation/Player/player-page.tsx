@@ -1,103 +1,13 @@
-import { useState, useEffect, memo, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
-import { useForm, Controller, Control } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { useStartQuiz, useSaveAnswer, useSubmitAttempt, useQuizProctor } from '../../hooks';
 import { useGetQuiz } from '../../hooks/quiz/queries/use-get-quiz-details';
-import { Label, Radio, RadioGroup } from '@headlessui/react';
-import { BiCheckCircle } from 'react-icons/bi';
-import { Button, showToast, Typography } from '../../components';
+import { Button, Loader, showToast, Typography } from '../../components';
 import { QuizTimer } from './quiz-timer';
 import { PlayerScore } from './player-score';
 import { Quiz } from '../../types';
-
-type FormValues = {
-  answers: Record<string, string | number>;
-};
-
-type QuestionRendererProps = {
-  question: Quiz.Question;
-  control: Control<FormValues>;
-};
-
-const QuestionRendererComponent = ({ question, control }: QuestionRendererProps) => {
-  switch (question?.type) {
-    case 'mcq':
-      return (
-        <Controller
-          control={control}
-          name={`answers.${question.id}`}
-          render={({ field }) => (
-            <RadioGroup
-              value={field.value ?? ''}
-              onChange={field.onChange}
-            >
-              <Label className='sr-only'>Select an option</Label>
-              <div className='flex flex-col gap-2'>
-                {question?.options?.map((opt: string, idx: number) => (
-                  <Radio
-                    key={idx}
-                    value={opt}
-                    className={({ checked }) =>
-                      `relative flex cursor-pointer rounded-lg px-4 py-3 transition border 
-                      ${checked ? 'bg-blue-50 border-blue-500' : 'border-gray-300 hover:bg-gray-50'}`
-                    }
-                  >
-                    {({ checked }) => (
-                      <div className='flex w-full items-center justify-between'>
-                        <Typography>{opt}</Typography>
-                        {checked && <BiCheckCircle className='w-5 h-5 text-blue-600' />}
-                      </div>
-                    )}
-                  </Radio>
-                ))}
-              </div>
-            </RadioGroup>
-          )}
-        />
-      );
-
-    case 'short':
-      return (
-        <Controller
-          control={control}
-          name={`answers.${question.id}`}
-          render={({ field }) => (
-            <input
-              {...field}
-              value={field.value ?? ''}
-              type='text'
-              placeholder='Your answer...'
-              className='w-full rounded-md border px-3 py-2 mt-2 focus:outline-none focus:ring-1 focus:ring-blue-500'
-            />
-          )}
-        />
-      );
-
-    case 'code':
-      return (
-        <Controller
-          control={control}
-          name={`answers.${question.id}`}
-          render={({ field }) => (
-            <textarea
-              {...field}
-              value={field.value ?? ''}
-              rows={5}
-              placeholder='Write your code here...'
-              className='w-full rounded-md border px-3 py-2 font-mono mt-2 focus:outline-none focus:ring-1 focus:ring-blue-500'
-            />
-          )}
-        />
-      );
-
-    default:
-      return null;
-  }
-};
-
-QuestionRendererComponent.displayName = 'QuestionRenderer';
-
-const QuestionRenderer = memo(QuestionRendererComponent);
+import { FormValues, QuestionRenderer } from './player-question';
 
 export function PlayerPage() {
   const { quizId } = useParams<{ quizId: string }>();
@@ -109,7 +19,11 @@ export function PlayerPage() {
   // API hooks
   const { startQuiz, data: attemptData } = useStartQuiz({});
   const { saveAnswer } = useSaveAnswer({ attemptId: Number(attemptData?.id) || 0 });
-  const { submitAttempt, data } = useSubmitAttempt({
+  const {
+    submitAttempt,
+    data,
+    isLoading: isLoadingSubmit,
+  } = useSubmitAttempt({
     attemptId: Number(attemptData?.id) || 0,
     onSuccess: () => {
       showToast.info('Quiz Submitted');
@@ -187,6 +101,12 @@ export function PlayerPage() {
 
   return (
     <div className='max-w-3xl mx-auto p-6 flex flex-col gap-6'>
+      {isLoading && (
+        <Loader
+          overlay={true}
+          size={40}
+        />
+      )}
       <QuizTimer
         quizId={Number(quizId)}
         duration={Number(quiz?.timeLimitSeconds)}
@@ -253,9 +173,13 @@ export function PlayerPage() {
           <Button
             variant='primary'
             size='sm'
-            onClick={onSubmit}
+            disabled={isLoadingSubmit}
+            onClick={async () => {
+              await handleAnswer();
+              onSubmit();
+            }}
           >
-            Submit
+            {isLoadingSubmit ? <Loader size={5} /> : 'Submit'}
           </Button>
         )}
       </div>

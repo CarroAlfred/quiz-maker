@@ -30,13 +30,14 @@ export function QuizCard({ quiz, onClickAttempTest, onView: onClickView }: QuizC
       <div className='mb-4'>
         <Typography
           variant='h6'
-          className='flex items-center gap-2'
+          className='flex flex-col items-center gap-2'
         >
-          📚 {quiz.title}
+          <div className='flex-1 flex items-center justify-center text-8xl'>📚</div>
+          {quiz.title}
         </Typography>
         <Typography
           variant='body'
-          className='text-gray-600 mt-1'
+          className='text-gray-600 mt-1 italic'
         >
           {quiz.description}
         </Typography>

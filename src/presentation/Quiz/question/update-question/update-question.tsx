@@ -1,7 +1,16 @@
 import { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { Quiz } from '../../../../types';
-import { DialogContainer, Dropdown, showToast, TextArea, TextInput, Typography } from '../../../../components';
+import {
+  Button,
+  DialogContainer,
+  Dropdown,
+  Loader,
+  showToast,
+  TextArea,
+  TextInput,
+  Typography,
+} from '../../../../components';
 import { useUpdateQuestion } from '../../../../hooks';
 
 type FormValues = Omit<Quiz.Question, 'id' | 'quizId'>;
@@ -10,10 +19,11 @@ type UpdateQuestionDialogProps = {
   open: boolean;
   onClose: () => void;
   quizId: number;
-  question: Quiz.Question; // 👈 existing question to edit
+  question: Quiz.Question;
+  questionCount: number;
 };
 
-export function UpdateQuestionDialog({ open, onClose, quizId, question }: UpdateQuestionDialogProps) {
+export function UpdateQuestionDialog({ open, onClose, quizId, question, questionCount }: UpdateQuestionDialogProps) {
   const { control, register, handleSubmit, reset, watch } = useForm<FormValues>({
     defaultValues: {
       type: question.type,
@@ -66,6 +76,11 @@ export function UpdateQuestionDialog({ open, onClose, quizId, question }: Update
     { value: 'code', label: 'Code' },
   ];
 
+  const options = Array.from({ length: questionCount }, (_, index) => ({
+    label: (index + 1).toString(),
+    id: index,
+  }));
+
   return (
     <DialogContainer
       open={open}
@@ -73,25 +88,23 @@ export function UpdateQuestionDialog({ open, onClose, quizId, question }: Update
       title='Update Question'
       footer={
         <div className='flex gap-2'>
-          <button
-            type='button'
+          <Button
             onClick={onClose}
-            className='rounded-md bg-gray-300 px-4 py-2 text-sm font-medium hover:bg-gray-400'
+            variant='secondary'
           >
             Cancel
-          </button>
-          <button
-            type='submit'
+          </Button>
+          <Button
             onClick={handleSubmit(onSubmit)}
             disabled={isLoading}
-            className='rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50'
+            variant='outline'
           >
-            {isLoading ? 'Saving...' : 'Save Changes'}
-          </button>
+            {isLoading ? <Loader size={20} /> : 'Save Changes'}
+          </Button>
         </div>
       }
     >
-      <form className='flex flex-col gap-6'>
+      <form className='flex flex-col gap-4'>
         {/* Type */}
         <Controller
           name='type'
@@ -110,6 +123,26 @@ export function UpdateQuestionDialog({ open, onClose, quizId, question }: Update
                   id: t.value,
                   label: t.label,
                 }))}
+                onChange={(item) => field.onChange(item.id)}
+              />
+            </div>
+          )}
+        />
+
+        <Controller
+          name='position'
+          control={control}
+          render={({ field }) => (
+            <div className='flex flex-col mb-2'>
+              <Typography
+                variant='caption'
+                weight='medium'
+              >
+                Position
+              </Typography>
+              <Dropdown
+                value={field.value}
+                items={options}
                 onChange={(item) => field.onChange(item.id)}
               />
             </div>

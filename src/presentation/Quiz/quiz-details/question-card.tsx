@@ -4,7 +4,12 @@ import { Quiz } from '../../../types';
 import { UpdateQuestionDialog } from '../question';
 import { useDeleteQuestion } from '../../../hooks';
 
-export default function QuestionCard({ question }: { question: Quiz.Question }) {
+type QuestionCardProps = {
+  question: Quiz.Question;
+  questionCount: number;
+};
+
+export default function QuestionCard({ question, questionCount }: QuestionCardProps) {
   const [openUpdateDialog, setOpenUpdateDialog] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 
@@ -18,6 +23,7 @@ export default function QuestionCard({ question }: { question: Quiz.Question }) 
       showToast.error('Failed to delete question');
     },
   });
+
   return (
     <div className='p-4 rounded-xl bg-white/5 backdrop-blur-sm border border-gray-200 group hover:shadow-md transition-shadow'>
       <div className='flex justify-between items-center'>
@@ -90,6 +96,7 @@ export default function QuestionCard({ question }: { question: Quiz.Question }) 
         onClose={() => setOpenUpdateDialog(false)}
         quizId={question.quizId}
         question={question}
+        questionCount={questionCount}
       />
 
       <DeleteConfirmationDialog

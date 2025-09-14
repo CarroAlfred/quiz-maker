@@ -1,5 +1,5 @@
 import { useNavigate, useParams } from 'react-router-dom';
-import { Button, Container, showToast } from '../../../components';
+import { Button, Container, Loader, showToast } from '../../../components';
 import QuizSidebar from './quiz-sidebar';
 import QuestionCard from './question-card';
 import { useState } from 'react';
@@ -29,9 +29,10 @@ export function QuizDetailsPage() {
     },
   });
 
-  // FIX THE LAYOUT LATER
   return (
     <Container className='flex h-screen'>
+      {isLoading && <Loader overlay />}
+
       {/* Sidebar */}
       <QuizSidebar
         quiz={{
@@ -73,6 +74,7 @@ export function QuizDetailsPage() {
             <QuestionCard
               key={question.id}
               question={question}
+              questionCount={quiz?.questions.length}
             />
           ))}
         </div>
@@ -89,6 +91,7 @@ export function QuizDetailsPage() {
         onClose={() => setIsShowUpdateQuizForm(false)}
         initialValues={{ ...quiz }}
         onClick={handleUpdateQuiz}
+        isLoading={updateLoading}
       />
     </Container>
   );

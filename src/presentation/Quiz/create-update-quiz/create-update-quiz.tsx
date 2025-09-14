@@ -1,6 +1,6 @@
 import { useForm } from 'react-hook-form';
 import { Quiz } from '../../../types';
-import { DialogContainer, Button, Typography, TextInput, TextArea } from '../../../components';
+import { DialogContainer, Button, Typography, TextInput, TextArea, Loader } from '../../../components';
 import { useEffect } from 'react';
 
 type FormValues = Omit<Quiz.QuizInfo, 'id' | 'createdAt'>;
@@ -71,7 +71,7 @@ export const CreateUpdateQuizDialog = ({
             size='sm'
             onClick={handleSubmit(onSubmit)}
           >
-            {isLoading ? 'Creating...' : initialValues ? 'Update' : 'Create'}
+            {isLoading ? <Loader size={20} /> : initialValues ? 'Update' : 'Create'}
           </Button>
         </div>
       }

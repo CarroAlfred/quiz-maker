@@ -40,7 +40,7 @@ export function PlayerScore({ score, total, violations }: PlayerScoreProps) {
               key={idx}
               variant='caption'
             >
-              Copy detected: {idx + 1} (last: {new Date(entry.timestamp).toLocaleTimeString()})
+              Copy detected: {idx + 1} ({new Date(entry.timestamp).toLocaleTimeString()})
             </Typography>
           ))}
           {violations.paste?.map((entry, idx) => (
@@ -48,7 +48,7 @@ export function PlayerScore({ score, total, violations }: PlayerScoreProps) {
               key={idx}
               variant='caption'
             >
-              Paste detected: {idx + 1} (last: {new Date(entry.timestamp).toLocaleTimeString()})
+              Paste detected: {idx + 1} ({new Date(entry.timestamp).toLocaleTimeString()})
             </Typography>
           ))}
           {violations.tabSwitch?.map((entry, idx) => (
@@ -56,7 +56,7 @@ export function PlayerScore({ score, total, violations }: PlayerScoreProps) {
               key={idx}
               variant='caption'
             >
-              Tab switch detected: {idx + 1} (last: {new Date(entry.timestamp).toLocaleTimeString()})
+              Tab switch detected: {idx + 1} ({new Date(entry.timestamp).toLocaleTimeString()})
             </Typography>
           ))}
           {violations.exitAttempt?.map((entry, idx) => (
@@ -64,7 +64,7 @@ export function PlayerScore({ score, total, violations }: PlayerScoreProps) {
               key={idx}
               variant='caption'
             >
-              Exit attempt detected: {idx + 1} (last: {new Date(entry.timestamp).toLocaleTimeString()})
+              Exit attempt detected: {idx + 1} ({new Date(entry.timestamp).toLocaleTimeString()})
             </Typography>
           ))}
         </div>

@@ -1,4 +1,4 @@
-import { DialogContainer, Typography, Button } from '../../../../components';
+import { DialogContainer, Typography, Button, Loader } from '../../../../components';
 
 type DeleteConfirmationDialogProps = {
   open: boolean;
@@ -27,7 +27,6 @@ export function DeleteConfirmationDialog({
           <Button
             variant='outline'
             onClick={onClose}
-            disabled={isLoading}
           >
             <Typography variant='body'>Cancel</Typography>
           </Button>
@@ -36,7 +35,7 @@ export function DeleteConfirmationDialog({
             onClick={onConfirm}
             disabled={isLoading}
           >
-            <Typography variant='body'>{isLoading ? 'Deleting...' : 'Delete'}</Typography>
+            <Typography variant='body'>{isLoading ? <Loader /> : 'Delete'}</Typography>
           </Button>
         </div>
       }
