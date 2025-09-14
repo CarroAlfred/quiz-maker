@@ -1,4 +1,4 @@
-# Country-State App Documentation
+# QUIZ MAKER App Documentation
 
 ## Table of Contents
 
@@ -19,7 +19,7 @@
 
 ## Project Overview
 
-**Country-State App** is a React + TypeScript project that allows users to select a country and corresponding state/region. It uses **React Query** for data fetching, **Axios** for API requests, and provides a **dropdown** components.
+**QUIZ MAKER App** is a React + TypeScript project that allows users to select a country and corresponding state/region. It uses **React Query** for data fetching, **Axios** for API requests, and provides a **dropdown** components.
 
 The project is built with Vite and SWC for fast development and optimized builds.
 

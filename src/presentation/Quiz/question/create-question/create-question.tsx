@@ -140,9 +140,9 @@ export function MultiQuestionDialog({ open, onClose, quizId }: MultiQuestionDial
                     </Typography>
                     <Dropdown
                       value={field.value}
-                      items={questionTypes.map((t) => ({
-                        id: t.value,
-                        label: t.label,
+                      items={questionTypes.map((type) => ({
+                        id: type.value,
+                        label: type.label,
                       }))}
                       onChange={(item) => field.onChange(item.id)}
                     />
@@ -264,12 +264,12 @@ export function MultiQuestionDialog({ open, onClose, quizId }: MultiQuestionDial
             icon={<BsPlusCircle />}
             size='lg'
             onClick={async () => {
-              const isValid = await trigger('questions'); // ✅ validates all questions
+              const isValid = await trigger('questions'); // validates all questions
               if (!isValid) return;
               append({
                 type: 'mcq',
                 prompt: '',
-                options: ['', '', '', ''],
+                options: ['', '', '', ''], // max to 4 options
                 correctAnswer: '',
                 position: 0,
               });

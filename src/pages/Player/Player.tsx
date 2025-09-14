@@ -2,17 +2,14 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useStartQuiz, useSaveAnswer, useSubmitAttempt, useQuizProctor } from '../../hooks';
-import { useGetQuiz } from '../../hooks/quiz/queries/use-get-quiz-details';
+import { useGetQuiz } from '../../hooks/queries/quiz/use-get-quiz-details';
 import { Button, Loader, showToast, Typography } from '../../components';
-import { QuizTimer } from './quiz-timer';
-import { PlayerScore } from './player-score';
 import { Quiz } from '../../types';
-import { FormValues, QuestionRenderer } from './player-question';
+import { FormValues, PlayerScore, PlayerTimer, QuestionRenderer } from '../../presentation/';
 
-export function PlayerPage() {
+export function Player() {
   const { quizId } = useParams<{ quizId: string }>();
 
-  // add loading and empty state view
   const { data: quiz, isLoading } = useGetQuiz(Number(quizId));
   const [currentStep, setCurrentStep] = useState(0);
 
@@ -107,7 +104,7 @@ export function PlayerPage() {
           size={40}
         />
       )}
-      <QuizTimer
+      <PlayerTimer
         quizId={Number(quizId)}
         duration={Number(quiz?.timeLimitSeconds)}
         onTimeUp={onSubmit}

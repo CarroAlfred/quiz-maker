@@ -1,12 +1,17 @@
 import { Outlet } from 'react-router-dom';
+import { Typography } from '../../common';
 
-// todo update the layout and links
 export function Dashboard() {
   return (
     <div className='flex min-h-screen bg-gray-50'>
       {/* Sidebar */}
       <aside className='w-64 border-r shadow-sm flex flex-col'>
-        <div className='p-4 font-bold text-lg border-b'>Quiz App</div>
+        <Typography
+          variant='h4'
+          className='p-4 border-b'
+        >
+          Quiz App
+        </Typography>
         <nav className='flex-1 p-4 space-y-2'>
           <a
             href='/'

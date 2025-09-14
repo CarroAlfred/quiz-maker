@@ -58,7 +58,7 @@ export function UpdateQuestionDialog({ open, onClose, quizId, question, question
     },
   });
 
-  const type = watch('type');
+  const questionType = watch('type');
 
   const onSubmit = (data: FormValues) => {
     handleUpdateQuestion({
@@ -164,7 +164,7 @@ export function UpdateQuestionDialog({ open, onClose, quizId, question, question
         </div>
 
         {/* Conditional fields */}
-        {type === 'mcq' && (
+        {questionType === 'mcq' && (
           <div className='flex flex-col mb-2'>
             <Typography
               variant='caption'
@@ -199,7 +199,7 @@ export function UpdateQuestionDialog({ open, onClose, quizId, question, question
           </div>
         )}
 
-        {type === 'short' && (
+        {questionType === 'short' && (
           <div className='flex flex-col mb-2'>
             <Typography
               variant='caption'
@@ -214,7 +214,7 @@ export function UpdateQuestionDialog({ open, onClose, quizId, question, question
           </div>
         )}
 
-        {type === 'code' && (
+        {questionType === 'code' && (
           <div className='flex flex-col mb-2'>
             <Typography
               variant='caption'
@@ -222,10 +222,9 @@ export function UpdateQuestionDialog({ open, onClose, quizId, question, question
             >
               Solution Code
             </Typography>
-            <textarea
+            <TextArea
               {...register('correctAnswer')}
               rows={4}
-              className='mt-1 rounded-md border px-3 py-2 font-mono focus:outline-none focus:ring-1 focus:ring-blue-500'
               placeholder='Enter correct code'
             />
           </div>

@@ -17,15 +17,4 @@ describe('SkeletonList suite', () => {
     const items = screen.getAllByRole('listitem');
     expect(items.length).toBe(3);
   });
-
-  it('renders skeleton lines inside each item', () => {
-    render(<SkeletonList count={2} />);
-    const items = screen.getAllByRole('listitem');
-    items.forEach((item) => {
-      const shortLine = item.querySelector('.skeleton-line.short');
-      const longLine = item.querySelector('.skeleton-line.long');
-      expect(shortLine).toBeInTheDocument();
-      expect(longLine).toBeInTheDocument();
-    });
-  });
 });

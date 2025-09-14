@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Button, DeleteConfirmationDialog, showToast, Typography } from '../../../components';
 import { Quiz } from '../../../types';
-import { UpdateQuestionDialog } from '../question';
 import { useDeleteQuestion } from '../../../hooks';
+import { UpdateQuestionDialog } from '../question';
 
 type QuestionCardProps = {
   question: Quiz.Question;

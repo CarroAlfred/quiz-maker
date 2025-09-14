@@ -7,7 +7,7 @@ interface TimerProps {
   onTimeUp: () => void;
 }
 
-export function QuizTimer({ quizId, duration, onTimeUp }: TimerProps) {
+export function PlayerTimer({ quizId, duration, onTimeUp }: TimerProps) {
   const [timeLeft, setTimeLeft] = useState<number>(duration);
   const timerRef = useRef<number | null>(null);
   const calledRef = useRef(false);
